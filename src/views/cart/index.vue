@@ -10,23 +10,18 @@
       ></el-table-column>
       <el-table-column
         align="center"
-        prop="productName"
-        label="商品名称"
+        prop="productId"
+        label="商品ID"
       ></el-table-column>
       <el-table-column
         align="center"
-        prop="productPrice"
-        label="价格"
-      ></el-table-column>
-      <el-table-column
-        align="center"
-        prop="productSales"
-        label="销量"
+        prop="createAt"
+        label="添加时间"
       ></el-table-column>
       <el-table-column align="center" prop="productStatus" label="状态">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.productStatus | statusFilter">
-            {{ scope.row.productStatus ? "已下架" : "正常" }}
+          <el-tag :type="scope.row.status | statusFilter">
+            {{ scope.row.status == 0 ? "可购买" : scope.row.status == 1 ? "已删除" : "已购买" }}
           </el-tag>
         </template>
       </el-table-column>
@@ -34,12 +29,12 @@
         <template slot-scope="scope">
           <el-button
             type="success"
-            @click="handleAddCart(scope.row.pid)"
+            @click="handleBuy(scope.row.id)"
             size="mini"
-            >加入购物车</el-button
+            >购买</el-button
           >
-          <el-button type="danger" @click="handleBuy(scope.row.pid)" size="mini"
-            >直接购买</el-button
+          <el-button type="danger" @click="handleDelete(scope.row.id)" size="mini"
+            >删除</el-button
           >
         </template>
       </el-table-column>
@@ -48,18 +43,16 @@
 </template>
 
 <script>
-import { getList } from "@/api/product";
-import { addCart } from "@/api/cart";
-import { addOrder } from "@/api/order";
-import { getToken } from '@/utils/auth' // get token from cookie
+import { addCart, getCartList, cartDeleteItem } from "@/api/cart";
+import { addFromCart } from "@/api/order";
 
 export default {
   filters: {
     statusFilter(status) {
       const statusMap = {
         0: "success",
-        1: "gray",
-        2: "danger",
+        1: "danger",
+        2: "gray",
       };
       return statusMap[status];
     },
@@ -76,57 +69,25 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true;
-      getList({ token: "abc" }).then((response) => {
+      getCartList().then((response) => {
         this.list = response.data;
         this.listLoading = false;
       });
     },
 
-  handleAddCart(id) {
-    // 通过id查询详情
-    console.log(id)
-    const hasToken = getToken()
-    if (!hasToken) {
-        this.$router.push('/login');
-        return
-    }
-    addCart(id).then((response) => {
-      if (response.status === 200) {
-        this.$confirm("添加购物车成功", "消息：", {
-        confirmButtonText: "去购物车",
-        cancelButtonText: "继续逛逛",
-        type: "success",
-        }).then(() => {
-        this.$router.push('/user/cart');
-      }).catch(() => {});
-      } else {
-        this.$confirm("添加购物车失败", "消息：", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-        })
-      }
-    });
-  },
-
   handleBuy(id) {
-    const hasToken = getToken()
-    if (!hasToken) {
-        this.$router.push('/login');
-        return
-    }
     this.$confirm("确认购买此商品吗？", "消息：", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       type: "warning",
     }).then(() => {
         // 发送购买请求
-        addOrder(id).then((response) => {
+        addFromCart(id).then((response) => {
           // 处理响应结果提示
       if (response.status === 200) {
         this.$confirm("支付并购买成功", "消息：", {
         confirmButtonText: "查看订单",
-        cancelButtonText: "继续逛逛",
+        cancelButtonText: "留在购物车",
         type: "success",
         }).then(() => {
         this.$router.push('/user/order');
@@ -143,6 +104,41 @@ export default {
         this.fetchData();
       })
       .catch(() => {
+        // 取消删除，不用理会
+      });
+  },
+
+  handleDelete(id) {
+    this.$confirm("确认从购物车删除此商品吗？", "消息：", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    })
+      .then(() => {
+        // 发送购买请求
+        cartDeleteItem(id).then((response) => {
+          // 处理响应结果提示
+      if (response.status === 200) {
+        this.$confirm("删除成功", "消息：", {
+        confirmButtonText: "去商城逛逛",
+        cancelButtonText: "留在购物车",
+        type: "success",
+        }).then(() => {
+        this.$router.push('/tao');
+      }).catch(() => {});
+      } else {
+        this.$confirm("添加购物车失败", "消息：", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+        })
+      }
+        });
+        // 刷新列表数据
+        this.fetchData();
+      })
+      .catch(() => {
+        // 取消删除，不用理会
         this.fetchData();
       });
   },

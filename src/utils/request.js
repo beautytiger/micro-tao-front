@@ -45,7 +45,7 @@ service.interceptors.response.use(
   response => {
     const res = response
 
-    if (response.status > 399) {
+    if (response.status > 499) {
       Message({
         message: 'Error',
         type: 'error',
@@ -58,12 +58,12 @@ service.interceptors.response.use(
   },
   error => {
     console.log('err' + error) // for debug
-    Message({
-      message: error.message,
-      type: 'error',
-      duration: 5 * 1000
-    })
-    return Promise.reject(error)
+    // Message({
+    //   message: error.message,
+    //   type: 'error',
+    //   duration: 5 * 1000
+    // })
+    // return Promise.reject(error)
   }
 )
 
