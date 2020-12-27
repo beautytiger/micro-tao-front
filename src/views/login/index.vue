@@ -42,7 +42,8 @@
       </el-form-item>
 
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
-
+        <br/>
+      <el-button :loading="loading" type="secondary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleNotLogin">取消</el-button>
     </el-form>
   </div>
 </template>
@@ -115,6 +116,9 @@ export default {
           return false
         }
       })
+    },
+    handleNotLogin() {
+        this.$router.push(`/`)
     }
   }
 }
