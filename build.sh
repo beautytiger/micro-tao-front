@@ -4,4 +4,7 @@ set -o nounset
 set -o pipefail
 
 npm run build:prod
-docker build -t harbor.beautytiger.com/docker.io/mytao-front:1.0.0 .
+
+IMAGE='docker.io/konmyn/microservice:front-1.0.0'
+docker build -t ${IMAGE} .
+docker push ${IMAGE}
