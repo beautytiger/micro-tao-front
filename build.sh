@@ -5,6 +5,11 @@ set -o pipefail
 
 npm run build:prod
 
-IMAGE='docker.io/konmyn/microservice:front-1.0.0'
+VERSION='1.0.0'
+PUSH_IMAGE=${1:-"false"}
+
+IMAGE="docker.io/konmyn/microservice:front-${VERSION}"
 docker build -t ${IMAGE} .
-docker push ${IMAGE}
+if [[ "${PUSH_IMAGE}" != "false" ]]; then
+    docker push ${IMAGE}
+fi
